@@ -49,5 +49,6 @@ typedef struct {
 } Tribunal;
 
 int concatenar_csv(const char *nome_arquivo);
+int resumo_tribunais(const char *nome_arquivo);
 
 #endif

@@ -12,8 +12,12 @@ int main()  {
     }; 
     int n_arquivos = 27;
 
+    // for (int i = 0; i < n_arquivos; i++)    {
+    //     concatenar_csv(arquivos[i]);
+    // }
+    // return 0;
+
     for (int i = 0; i < n_arquivos; i++)    {
-        concatenar_csv(arquivos[i]);
+        resumo_tribunais(arquivos[i]);
     }
-    return 0;
 };

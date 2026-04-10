@@ -55,8 +55,8 @@ int concatenar_csv(const char *nome_arquivo) {
                 "\"%[^\"]\","   // t.municipio_oj
                 "%d,"           
                 "\"%[^\"]\","   // t.nome
-                "\"%[^\"]\","   // t.mesano_cnm1
-                "\"%[^\"]\","   // t.mesano_sent
+                "%[^,],"        // t.mesano_cnm1
+                "%[^,],"        // t.mesano_sent
                 "%d,%d,%d,%d,%d,"
                 "%f,"
                 "%d,%d,%d,"
@@ -140,35 +140,36 @@ int resumo_tribunais(const char *nome_arquivo)  {
 
 
 
-    // Aqui ele abre o arquiv csv que o professor passou - Um dos, no caso
+    //ABRE UM DOS FILE
     F = fopen(nome_arquivo, "r");
     if  (F == NULL) {
         perror("ERROR: Arquivo nao foi devidamente aberto ou encontrado");
         return 1;
     }
 
-    // Aqui ele cria o arquivo onde vamos jogar tudo dentro
-    // Meu notebook é linux, isso funciona pra ele não explodir no processo
+    //CRIA O ARQUIVO DESTINO
     #if defined(_WIN32) || defined(_WIN64)
         system("type nul > resumo_tribunais.csv");
     #else
         system("touch resumo_tribunais.csv");
     #endif  //? Pesquisar sobre as possibilidades do #if defined
     
-
+    //ABRE O ARQUIVO DESTINO E ESCREVE O CABEÇALHO
     D = fopen("resumo_tribunais.csv", "a");
-
     //! Evitar que ele escreva o cabeçalho em todo loop
-    if(fgets(linha, sizeof(linha), D) == NULL)  {
+    fseek(D, 0, SEEK_END);
+    if (ftell(D) == 0) {
         fprintf(D, "\"sigla_tribunal\",\"julgados_2026\", \"Meta1\", \"Meta2A\", \"Meta2Ant\", \"Meta4A\", \"Meta4B\"\n");
     }
     
+    //REMOVE O CABEÇALHO DO F
+    fgets(linha, sizeof(linha), F);
 
+    //LOOP PARA PEGAR CADA LINHA
     while   (fgets(linha, sizeof(linha), F) != NULL)    {
+        
+        //ARMAZENANDO DENTRO DA STRUCT
         sscanf(linha,
-            
-            // Deixe esta parte em lista, NÃO coloque em linha, senão fica um inferno de ler
-            // Aqui ela não lê as aspas, elas são colocadas no fprintf
                 "\"%[^\"]\","   // t.sigla_tribunal
                 "\"%[^\"]\","   // t.procedimento
                 "\"%[^\"]\","   // t.ramo_justica
@@ -177,8 +178,8 @@ int resumo_tribunais(const char *nome_arquivo)  {
                 "\"%[^\"]\","   // t.municipio_oj
                 "%d,"           // t.id_ultimo_oj
                 "\"%[^\"]\","   // t.nome
-                "\"%[^\"]\","   // t.mesano_cnm1
-                "\"%[^\"]\"," // t.mesano_sent
+                "%[^,],"        // t.mesano_cnm1
+                "%[^,],"        // t.mesano_sent
                 "%d,%d,%d,%d,%d,"
                 "%f,"
                 "%d,%d,%d,"
@@ -204,6 +205,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
                 &t.cumprimento_meta4b
         );
 
+        //FAZENDO AS SOMATÓRIAS - 17 AO TOTAL
         //* Meta1
         sum_julgados_2026       +=  t.julgados_2026;
         sum_casos_novos_2026    +=  t.casos_novos_2026;
@@ -218,7 +220,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
         //* Meta2Ant
         sum_julgm2_ant  +=   t.julgm2_ant;
         sum_distm2_ant  +=   t.distm2_ant;
-        sum_suspm2_a    +=   t.suspm2_ant;
+        sum_suspm2_ant  +=   t.suspm2_ant;
         sum_desom2_ant  +=   t.desom2_ant;
 
         //* Meta4A
@@ -232,7 +234,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
         sum_suspm4_b += t.suspm4_b;
     }
 
-    //* Desenvolvimento das fórmulas
+    //DESENVOLVENDO A FÓRMULAS
 
     // Meta 1
     denominador = sum_casos_novos_2026 + sum_dessobrestados_2026 + sum_suspensos_2026;
@@ -274,7 +276,8 @@ int resumo_tribunais(const char *nome_arquivo)  {
         meta4b = 0.0;
     }
 
-    fprintf(D, "\"%s\", %.2f, %.2f, %.2f, %.2f, %.2f\n", t.sigla_tribunal, meta1, meta2a, meta2ant, meta4a, meta4b);
+    //PRINTA OS RESULTADOS NO ARQUIVO DESTINO
+    fprintf(D, "\"%s\", %d, %.2f, %.2f, %.2f, %.2f, %.2f\n", t.sigla_tribunal, sum_julgados_2026, meta1, meta2a, meta2ant, meta4a, meta4b);
     printf("Arquivo %s resumido com sucesso\n", nome_arquivo);
 
 }

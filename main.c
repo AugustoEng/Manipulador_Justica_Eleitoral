@@ -33,5 +33,28 @@ int main()  {
     for (int i = 0; i < n_arquivos; i++)    {
         resumo_tribunais(arquivos[i]);
     }
+    fclose(destino);
+
+
+    char nome_municio[100];
+    char ext[5] = ".csv";
+    char arquivo_pesquisa[105];
+    printf("\nQual?");
+    scanf("%99s", nome_municio);
+    strcpy(arquivo_pesquisa, nome_municio);
+    strcat(arquivo_pesquisa, ext);
+
+    destino = fopen(arquivo_pesquisa, "w");
+    fprintf(destino, "\"sigla_tribunal\",\"procedimento\",\"ramo_justica\",\"sigla_grau\","
+           "\"uf_oj\",\"municipio_oj\",\"id_ultimo_oj\",\"nome\",\"mesano_cnm1\",\"mesano_sent\","
+           "\"casos_novos_2026\",\"julgados_2026\",\"prim_sent2026\",\"suspensos_2026\","
+           "\"dessobrestados_2026\",\"cumprimento_meta1\",\"distm2_a\",\"julgm2_a\",\"suspm2_a\","
+           "\"cumprimento_meta2a\",\"distm2_ant\",\"julgm2_ant\",\"suspm2_ant\",\"desom2_ant\","
+           "\"cumprimento_meta2ant\",\"distm4_a\",\"julgm4_a\",\"suspm4_a\",\"cumprimento_meta4a\","
+           "\"distm4_b\",\"julgm4_b\",\"suspm4_b\",\"cumprimento_meta4b\"\n");
+    for (int i = 0; i < n_arquivos; i++)    {
+        busca_municipio(arquivos[i], nome_municio);
+    }
+    fclose(destino);
     return 0;
 };

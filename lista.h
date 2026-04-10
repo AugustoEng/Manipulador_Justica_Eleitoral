@@ -50,5 +50,6 @@ typedef struct {
 
 int concatenar_csv(const char *nome_arquivo);
 int resumo_tribunais(const char *nome_arquivo);
+int busca_municipio(const char * nome_arquivo, char *nome_municipio);
 
 #endif

@@ -230,7 +230,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 2A
-    denominador = sum_distm2_a + sum_suspm2_a;
+    denominador = sum_distm2_a - sum_suspm2_a;
     if (denominador != 0) {
         meta2a = ((float)sum_julgm2_a / denominador) * (1000.0 / 7.0);
     } else {
@@ -238,7 +238,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 2Ant
-    denominador = sum_distm2_ant + sum_suspm2_ant + sum_desom2_ant;
+    denominador = sum_distm2_ant - sum_suspm2_ant - sum_desom2_ant;
     if (denominador != 0) {
         meta2ant = ((float)sum_julgm2_ant / denominador) * 100.0;
     } else {
@@ -246,7 +246,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 4A
-    denominador = sum_distm4_a + sum_suspm4_a;
+    denominador = sum_distm4_a - sum_suspm4_a;
     if (denominador != 0) {
         meta4a = ((float)sum_julgm4_a / denominador) * 100.0;
     } else {
@@ -254,7 +254,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 4B
-    denominador = sum_distm4_b + sum_suspm4_b;
+    denominador = sum_distm4_b - sum_suspm4_b;
     if (denominador != 0) {
         meta4b = ((float)sum_julgm4_b / denominador) * 100.0;
     } else {
@@ -269,4 +269,103 @@ int resumo_tribunais(const char *nome_arquivo)  {
     fclose(F);
     fclose(D);
 
+}
+
+int busca_municipio(const char * nome_arquivo, char *nome_municipio)  {
+    FILE *F, *D; // F de File | D de destino       não me pergunte o porquê, eu só quis
+    char linha[MAX_LINHA];
+    Tribunal t;
+
+    //DEFINIÇÕES
+    char nome_arquivo_saida[110];
+
+
+    //ABRE UM DOS FILE
+    F = fopen(nome_arquivo, "r");
+    if  (F == NULL) {
+        perror("ERROR: Arquivo nao foi devidamente aberto ou encontrado");
+        return 1;
+    }
+
+    //ABRE O ARQUIVO DESTINO
+    snprintf(nome_arquivo_saida, sizeof(nome_arquivo_saida), "%s.csv", nome_municipio);
+    D = fopen(nome_arquivo_saida, "a");
+    if  (D == NULL) {
+        perror("ERRO: O arquvivo \"resumo_tribunais.csv\" não foi aberto com sucesso");
+    }
+
+    //REMOVE O CABEÇALHO DO F
+    fgets(linha, sizeof(linha), F);
+
+    //LOOP PARA PEGAR CADA LINHA
+    while   (fgets(linha, sizeof(linha), F) != NULL)    {
+        
+        //ARMAZENANDO DENTRO DA STRUCT
+        sscanf(linha,
+                "\"%[^\"]\","   // t.sigla_tribunal
+                "\"%[^\"]\","   // t.procedimento
+                "\"%[^\"]\","   // t.ramo_justica
+                "\"%[^\"]\","   // t.sigla_grau
+                "\"%[^\"]\","   // t.uf_oj
+                "\"%[^\"]\","   // t.municipio_oj
+                "%d,"           // t.id_ultimo_oj
+                "\"%[^\"]\","   // t.nome
+                "%[^,],"        // t.mesano_cnm1
+                "%[^,],"        // t.mesano_sent
+                "%d,%d,%d,%d,%d,"
+                "%f,"
+                "%d,%d,%d,"
+                "%f,"
+                "%d,%d,%d,%d,"
+                "%f,"
+                "%d,%d,%d,%d,"
+                "%d,%d,%d,"
+                "%f",
+                t.sigla_tribunal, t.procedimento, t.ramo_justica,
+                t.sigla_grau, t.uf_oj, t.municipio_oj,
+                &t.id_ultimo_oj,
+                t.nome, t.mesano_cnm1, t.mesano_sent,
+                &t.casos_novos_2026, &t.julgados_2026, &t.prim_sent2026,
+                &t.suspensos_2026, &t.dessobrestados_2026,
+                &t.cumprimento_meta1,
+                &t.distm2_a, &t.julgm2_a, &t.suspm2_a,
+                &t.cumprimento_meta2a,
+                &t.distm2_ant, &t.julgm2_ant, &t.suspm2_ant, &t.desom2_ant,
+                &t.cumprimento_meta2ant,
+                &t.distm4_a, &t.julgm4_a, &t.suspm4_a, &t.cumprimento_meta4a,
+                &t.distm4_b, &t.julgm4_b, &t.suspm4_b,
+                &t.cumprimento_meta4b
+        );
+
+        if  (strcmp(t.municipio_oj, nome_municipio) == 0)  {
+            fprintf(D,
+                "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\","
+                "%d,"
+                "\"%s\",\"%s\",\"%s\","
+                "%d,%d,%d,%d,%d,"
+                "%.2f,"
+                "%d,%d,%d,"
+                "%.2f,"
+                "%d,%d,%d,%d,"
+                "%.2f,"
+                "%d,%d,%d,%d,"
+                "%d,%d,%d,"
+                "%.2f\n",
+                t.sigla_tribunal, t.procedimento, t.ramo_justica,
+                t.sigla_grau, t.uf_oj, t.municipio_oj,
+                t.id_ultimo_oj,
+                t.nome, t.mesano_cnm1, t.mesano_sent,
+                t.casos_novos_2026, t.julgados_2026, t.prim_sent2026,
+                t.suspensos_2026, t.dessobrestados_2026,
+                t.cumprimento_meta1,
+                t.distm2_a, t.julgm2_a, t.suspm2_a,
+                t.cumprimento_meta2a,
+                t.distm2_ant, t.julgm2_ant, t.suspm2_ant, t.desom2_ant,
+                t.cumprimento_meta2ant,
+                t.distm4_a, t.julgm4_a, t.suspm4_a, t.cumprimento_meta4a,
+                t.distm4_b, t.julgm4_b, t.suspm4_b,
+                t.cumprimento_meta4b
+            );
+        }
+    }
 }

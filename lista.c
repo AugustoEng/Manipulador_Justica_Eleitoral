@@ -148,18 +148,16 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     //CRIA O ARQUIVO DESTINO
-    #if defined(_WIN32) || defined(_WIN64)
-        system("type nul > resumo_tribunais.csv");
-    #else
-        system("touch resumo_tribunais.csv");
-    #endif  //? Pesquisar sobre as possibilidades do #if defined
+    // #if defined(_WIN32) || defined(_WIN64)
+    //     system("type nul > resumo_tribunais.csv");
+    // #else
+    //     system("touch resumo_tribunais.csv");
+    // #endif  //? Pesquisar sobre as possibilidades do #if defined
     
-    //ABRE O ARQUIVO DESTINO E ESCREVE O CABEÇALHO
+    //ABRE O ARQUIVO DESTINO
     D = fopen("resumo_tribunais.csv", "a");
-    //! Evitar que ele escreva o cabeçalho em todo loop
-    fseek(D, 0, SEEK_END);
-    if (ftell(D) == 0) {
-        fprintf(D, "\"sigla_tribunal\",\"julgados_2026\", \"Meta1\", \"Meta2A\", \"Meta2Ant\", \"Meta4A\", \"Meta4B\"\n");
+    if  (D == NULL) {
+        perror("ERRO: O arquvivo \"resumo_tribunais.csv\" não foi aberto com sucesso");
     }
     
     //REMOVE O CABEÇALHO DO F
@@ -245,7 +243,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 2A
-    denominador = sum_distm2_a - sum_suspm2_a;
+    denominador = sum_distm2_a + sum_suspm2_a;
     if (denominador != 0) {
         meta2a = ((float)sum_julgm2_a / denominador) * (1000.0 / 7.0);
     } else {
@@ -253,7 +251,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 2Ant
-    denominador = sum_distm2_ant - sum_suspm2_ant - sum_desom2_ant;
+    denominador = sum_distm2_ant + sum_suspm2_ant + sum_desom2_ant;
     if (denominador != 0) {
         meta2ant = ((float)sum_julgm2_ant / denominador) * 100.0;
     } else {
@@ -261,7 +259,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 4A
-    denominador = sum_distm4_a - sum_suspm4_a;
+    denominador = sum_distm4_a + sum_suspm4_a;
     if (denominador != 0) {
         meta4a = ((float)sum_julgm4_a / denominador) * 100.0;
     } else {
@@ -269,7 +267,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     }
 
     // Meta 4B
-    denominador = sum_distm4_b - sum_suspm4_b;
+    denominador = sum_distm4_b + sum_suspm4_b;
     if (denominador != 0) {
         meta4b = ((float)sum_julgm4_b / denominador) * 100.0;
     } else {
@@ -279,5 +277,7 @@ int resumo_tribunais(const char *nome_arquivo)  {
     //PRINTA OS RESULTADOS NO ARQUIVO DESTINO
     fprintf(D, "\"%s\", %d, %.2f, %.2f, %.2f, %.2f, %.2f\n", t.sigla_tribunal, sum_julgados_2026, meta1, meta2a, meta2ant, meta4a, meta4b);
     printf("Arquivo %s resumido com sucesso\n", nome_arquivo);
+    fclose(F);
+    fclose(D);
 
 }

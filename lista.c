@@ -8,7 +8,7 @@ int concatenar_csv(const char *nome_arquivo) {
     char linha[MAX_LINHA];
     Tribunal t;
 
-    // Aqui ele abre o arquiv csv que o professor passou - Um dos, no caso
+    //ABRE UM DOS FILE
     F = fopen(nome_arquivo, "r");
     if  (F == NULL) {
         perror("ERROR: Arquivo nao foi devidamente aberto ou encontrado");
@@ -17,36 +17,22 @@ int concatenar_csv(const char *nome_arquivo) {
 
     // Aqui ele cria o arquivo onde vamos jogar tudo dentro
     // Meu notebook é linux, isso funciona pra ele não explodir no processo
-    #if defined(_WIN32) || defined(_WIN64)
-        system("type nul > tribunais_concatenados.csv");
-    #else 
-        system("touch tribunais_concatenados.csv");
-    #endif  //? Pesquisar sobre as possibilidades do #if defined
+    // #if defined(_WIN32) || defined(_WIN64)
+    //     system("type nul > tribunais_concatenados.csv");
+    // #else 
+    //     system("touch tribunais_concatenados.csv");
+    // #endif  //? Pesquisar sobre as possibilidades do #if defined
     
-
+    //ABRE O ARQUIVO DESTINO
     D = fopen("tribunais_concatenados.csv", "a");
 
-    //! Evitar que ele escreva o cabeçalho em todo loop
-    if(fgets(linha, sizeof(linha), D) == NULL)  {
-        fprintf(D, "\"sigla_tribunal\",\"procedimento\",\"ramo_justica\",\"sigla_grau\","
-           "\"uf_oj\",\"municipio_oj\",\"id_ultimo_oj\",\"nome\",\"mesano_cnm1\",\"mesano_sent\","
-           "\"casos_novos_2026\",\"julgados_2026\",\"prim_sent2026\",\"suspensos_2026\","
-           "\"dessobrestados_2026\",\"cumprimento_meta1\",\"distm2_a\",\"julgm2_a\",\"suspm2_a\","
-           "\"cumprimento_meta2a\",\"distm2_ant\",\"julgm2_ant\",\"suspm2_ant\",\"desom2_ant\","
-           "\"cumprimento_meta2ant\",\"distm4_a\",\"julgm4_a\",\"suspm4_a\",\"cumprimento_meta4a\","
-           "\"distm4_b\",\"julgm4_b\",\"suspm4_b\",\"cumprimento_meta4b\"\n");
-
-    }
-
-    
+    //REMOVE O CABEÇALHO DO F
     fgets(linha, sizeof(linha), F);
 
-    // Lendo os dados de uma linha por vez
+    //LOOP PARA PEGAR CADA LINHA
     while   (fgets(linha, sizeof(linha), F) != NULL)    {
+        //ARMAZENANDO DENTRO DA STRUCT
         sscanf(linha,
-            
-            // Deixe esta parte em lista, NÃO coloque em linha, senão fica um inferno de ler
-            // Aqui ela não lê as aspas, elas são colocadas no fprintf
                 "\"%[^\"]\","   // t.sigla_tribunal
                 "\"%[^\"]\","   // t.procedimento
                 "\"%[^\"]\","   // t.ramo_justica
@@ -82,8 +68,8 @@ int concatenar_csv(const char *nome_arquivo) {
                 &t.cumprimento_meta4b
             );
 
-        // Colocando a linha no novo arquivo
-        // O /" faz com que as aspas sejam colocadas de forma literal sem explodir o encadeamento 
+        //ESCREVENDO NO DESTINO
+        //? O /" faz com que as aspas sejam colocadas de forma literal sem explodir o encadeamento 
         fprintf(D,
             "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\","
             "%d,"
@@ -113,6 +99,7 @@ int concatenar_csv(const char *nome_arquivo) {
             t.cumprimento_meta4b
         );
     }
+    //FECHAMENTOS E FEEDBACK
     fclose(F);
     fclose(D);
     printf("Arquivo %s anexado com sucesso\n",  nome_arquivo);
@@ -276,6 +263,8 @@ int resumo_tribunais(const char *nome_arquivo)  {
 
     //PRINTA OS RESULTADOS NO ARQUIVO DESTINO
     fprintf(D, "\"%s\", %d, %.2f, %.2f, %.2f, %.2f, %.2f\n", t.sigla_tribunal, sum_julgados_2026, meta1, meta2a, meta2ant, meta4a, meta4b);
+    
+    //FECHAMENTOS E FEEDBACK
     printf("Arquivo %s resumido com sucesso\n", nome_arquivo);
     fclose(F);
     fclose(D);

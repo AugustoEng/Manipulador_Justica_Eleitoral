@@ -32,7 +32,27 @@ int AdicionarTribunal(Lista *L, Tribunal A) {
     return 1;
 }
 
-int EscreverCabecalho(int comando, const char *NomeArquivo){
+int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo){
+    if(comando == 0){
+        FILE * D;
+        D = fopen(NomeArquivo, "w");
+        if (D == NULL)  {
+            printf("ERRO: O arquivo não foi devidamente aberto");
+        }
+        fprintf(D, "\"sigla_tribunal\",\"procedimento\",\"ramo_justica\",\"sigla_grau\","
+           "\"uf_oj\",\"municipio_oj\",\"id_ultimo_oj\",\"nome\",\"mesano_cnm1\",\"mesano_sent\","
+           "\"casos_novos_2026\",\"julgados_2026\",\"prim_sent2026\",\"suspensos_2026\","
+           "\"dessobrestados_2026\",\"cumprimento_meta1\",\"distm2_a\",\"julgm2_a\",\"suspm2_a\","
+           "\"cumprimento_meta2a\",\"distm2_ant\",\"julgm2_ant\",\"suspm2_ant\",\"desom2_ant\","
+           "\"cumprimento_meta2ant\",\"distm4_a\",\"julgm4_a\",\"suspm4_a\",\"cumprimento_meta4a\","
+           "\"distm4_b\",\"julgm4_b\",\"suspm4_b\",\"cumprimento_meta4b\"\n");
+        fclose(D);
+    }
+    
+    return 1;
+}
+
+int EscreverCabecalhoResumido(int comando, const char *NomeArquivo){
     if(comando == 0){
         FILE * D;
         D = fopen(NomeArquivo, "w");
@@ -159,7 +179,7 @@ int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo){
     //     "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
     // }; 
     for(int i = 0; i < n_arquivos; i++) {
-        EscreverCabecalho(header, NomeArquivo);
+        EscreverCabecalhoConcatenado(header, NomeArquivo);
         int carregados =    CarregarCSV(L, arquivos[i], T);
         int escritos =      EscreverCSV(L, T, NomeArquivo);
         L->Tamanho = 0;
@@ -171,4 +191,113 @@ int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo){
         }
 
     }
+}
+
+int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo)  {
+    FILE * D;
+    D = fopen(NomeArquivo, "a");
+    int n_arquivos = 1, header = 0; // São 27 
+    char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
+        "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
+        "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
+    };
+
+    // DEFINIçÃO DAS VARIÁVEI SOMATÓRIA - Ficou lindo
+    int sum_julgados_2026 = 0,  sum_casos_novos_2026 = 0,   sum_dessobrestados_2026 = 0,    sum_suspensos_2026 = 0,
+        sum_julgm2_a = 0,       sum_distm2_a = 0,           sum_suspm2_a = 0,               sum_julgm2_ant = 0,
+        sum_distm2_ant = 0,     sum_suspm2_ant = 0,         sum_desom2_ant = 0,             sum_julgm4_a = 0,
+        sum_distm4_a = 0,       sum_suspm4_a = 0,           sum_julgm4_b = 0,               sum_distm4_b = 0,
+        sum_suspm4_b = 0;
+    
+    float   
+        meta1 = 0,              meta2a = 0,                 meta2ant = 0,                   meta4a = 0,                     
+        meta4b = 0;
+
+    int denominador = 0;
+
+     for(int i = 0; i < n_arquivos; i++) {
+        EscreverCabecalhoConcatenado(header, NomeArquivo);
+        int carregados =    CarregarCSV(L, arquivos[i], T);
+
+        for(int j =0; j < L->Tamanho; j++)  {
+            //* Meta1
+            sum_julgados_2026       +=  L->Dados[j].julgados_2026;
+            sum_casos_novos_2026    +=  L->Dados[j].casos_novos_2026;
+            sum_dessobrestados_2026 +=  L->Dados[j].dessobrestados_2026;
+            sum_suspensos_2026      +=  L->Dados[j].suspensos_2026;
+
+            //* Meta2A
+            sum_julgm2_a += L->Dados[j].julgm2_a;
+            sum_distm2_a += L->Dados[j].distm2_a;
+            sum_suspm2_a += L->Dados[j].suspm2_a;
+
+            //* Meta2Ant
+            sum_julgm2_ant  +=   L->Dados[j].julgm2_ant;
+            sum_distm2_ant  +=   L->Dados[j].distm2_ant;
+            sum_suspm2_ant  +=   L->Dados[j].suspm2_ant;
+            sum_desom2_ant  +=   L->Dados[j].desom2_ant;
+
+            //* Meta4A
+            sum_julgm4_a += L->Dados[j].julgm4_a;
+            sum_distm4_a += L->Dados[j].distm4_a;
+            sum_suspm4_a += L->Dados[j].suspm4_a;
+
+            //* Meta4B
+            sum_julgm4_b += L->Dados[j].julgm4_b;
+            sum_distm4_b += L->Dados[j].distm4_b;
+            sum_suspm4_b += L->Dados[j].suspm4_b;
+        }
+
+        //DESENVOLVENDO A FÓRMULAS
+
+        // Meta 1
+        denominador = sum_casos_novos_2026 + sum_dessobrestados_2026 - sum_suspensos_2026;
+        if (denominador != 0) {
+            meta1 = ((float)sum_julgados_2026 / denominador) * 100.0;
+        } else {
+            meta1 = 0.0;
+        }
+
+        // Meta 2A
+        denominador = sum_distm2_a - sum_suspm2_a;
+        if (denominador != 0) {
+            meta2a = ((float)sum_julgm2_a / denominador) * (1000.0 / 7.0);
+        } else {
+            meta2a = 0.0;
+        }
+
+        // Meta 2Ant
+        denominador = sum_distm2_ant - sum_suspm2_ant - sum_desom2_ant;
+        if (denominador != 0) {
+            meta2ant = ((float)sum_julgm2_ant / denominador) * 100.0;
+        } else {
+            meta2ant = 0.0;
+        }
+
+        // Meta 4A
+        denominador = sum_distm4_a - sum_suspm4_a;
+        if (denominador != 0) {
+            meta4a = ((float)sum_julgm4_a / denominador) * 100.0;
+        } else {
+            meta4a = 0.0;
+        }
+
+        // Meta 4B
+        denominador = sum_distm4_b - sum_suspm4_b;
+        if (denominador != 0) {
+            meta4b = ((float)sum_julgm4_b / denominador) * 100.0;
+        } else {
+            meta4b = 0.0;
+        }
+
+        //PRINTA OS RESULTADOS NO ARQUIVO DESTINO
+        fprintf(D, "\"%s\", %d, %.2f, %.2f, %.2f, %.2f, %.2f\n", L->Dados[1].sigla_tribunal, sum_julgados_2026, meta1, meta2a, meta2ant, meta4a, meta4b);
+        L->Tamanho = 0;
+        header = 1;
+
+
+    }
+
+
+
 }

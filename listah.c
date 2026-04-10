@@ -59,13 +59,7 @@ int EscreverCabecalhoResumido(int comando, const char *NomeArquivo){
         if (D == NULL)  {
             printf("ERRO: O arquivo não foi devidamente aberto");
         }
-        fprintf(D, "\"sigla_tribunal\",\"procedimento\",\"ramo_justica\",\"sigla_grau\","
-           "\"uf_oj\",\"municipio_oj\",\"id_ultimo_oj\",\"nome\",\"mesano_cnm1\",\"mesano_sent\","
-           "\"casos_novos_2026\",\"julgados_2026\",\"prim_sent2026\",\"suspensos_2026\","
-           "\"dessobrestados_2026\",\"cumprimento_meta1\",\"distm2_a\",\"julgm2_a\",\"suspm2_a\","
-           "\"cumprimento_meta2a\",\"distm2_ant\",\"julgm2_ant\",\"suspm2_ant\",\"desom2_ant\","
-           "\"cumprimento_meta2ant\",\"distm4_a\",\"julgm4_a\",\"suspm4_a\",\"cumprimento_meta4a\","
-           "\"distm4_b\",\"julgm4_b\",\"suspm4_b\",\"cumprimento_meta4b\"\n");
+        fprintf(D, "\"sigla_tribunal\",\"julgados_2026\", \"Meta1\", \"Meta2A\", \"Meta2Ant\", \"Meta4A\", \"Meta4B\"\n");
         fclose(D);
     }
     
@@ -196,7 +190,7 @@ int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo){
 int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo)  {
     FILE * D;
     D = fopen(NomeArquivo, "a");
-    int n_arquivos = 1, header = 0; // São 27 
+    int n_arquivos = 26, header = 0; // São 27 
     char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
         "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
         "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"

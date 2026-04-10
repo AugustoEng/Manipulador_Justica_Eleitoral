@@ -10,5 +10,5 @@ int main()  {
     Tribunal Eleitoral;
 
     InicializarLista(&L);
-    ConcatenarDados(&L, Eleitoral, "Concatenados.csv");
+    GerarResumo(&L, Eleitoral, "Resumidos.csv");
 };

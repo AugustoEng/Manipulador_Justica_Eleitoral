@@ -65,6 +65,7 @@ int CarregarCSV(Lista *L, const char *Nome_Arquivo, Tribunal t);
 int EscreverCSV(Lista *L, Tribunal T, const char *Nome_Arquivo); 
 int ConcatenarDados(Lista *L, Tribunal A, const char *NomeArquivo);
 int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo);
-int EscreverCabecalhoResumido(header, NomeArquivo);
+int EscreverCabecalhoResumido(int comando, const char *NomeArquivo);
+int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo);
 
 #endif

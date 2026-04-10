@@ -1,6 +1,7 @@
 #ifndef LISTA_H
 #define LISTA_H
 
+#define MAX_TRIBUNAIS 26000
 #define MAX_LINHA 500
 
 typedef struct {
@@ -48,7 +49,20 @@ typedef struct {
     float cumprimento_meta4b;
 } Tribunal;
 
+typedef struct  {
+    Tribunal  Dados[MAX_TRIBUNAIS];
+    int     Tamanho;
+    int     Capacidade;
+} Lista;
+
 int concatenar_csv(const char *nome_arquivo);
 int resumo_tribunais(const char *nome_arquivo);
+void InicializarLista(Lista *L);
+int AdicionarTribunal(Lista *L, Tribunal A);
+int ListaCheia(const Lista *L);
+int ListaVazia(const Lista *L);
+int CarregarCSV(Lista *L, const char *Nome_Arquivo, Tribunal t);
+int EscreverCSV(Lista *L, Tribunal T, const char *Nome_Arquivo); 
+int ConcatenarDados(Lista *L, Tribunal A, const char *NomeArquivo);
 
 #endif

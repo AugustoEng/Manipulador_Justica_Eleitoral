@@ -67,6 +67,8 @@ int concatenar_csv(const char *nome_arquivo) {
                 &t.distm4_b, &t.julgm4_b, &t.suspm4_b,
                 &t.cumprimento_meta4b
             );
+        
+        
 
         //ESCREVENDO NO DESTINO
         //? O /" faz com que as aspas sejam colocadas de forma literal sem explodir o encadeamento 

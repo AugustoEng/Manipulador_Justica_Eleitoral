@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "lista.h"
 
 //Todo INICIALIZA
@@ -21,7 +22,7 @@ int ListaVazia(const Lista *L)  {
     return L->Tamanho == 0;
 }
 
-//TODO ADICIONA
+//TODO ADICIONA NA STRUCT
 int AdicionarTribunal(Lista *L, Tribunal A) {
     if(ListaCheia(L))   {
         printf("ERRO: Lista Cheia");
@@ -32,6 +33,7 @@ int AdicionarTribunal(Lista *L, Tribunal A) {
     return 1;
 }
 
+//TODO CABEÇALHO | CONCATENAÇÃO
 int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo){
     if(comando == 0){
         FILE * D;
@@ -52,6 +54,7 @@ int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo){
     return 1;
 }
 
+//TODO CABEÇALHO | RESUMO
 int EscreverCabecalhoResumido(int comando, const char *NomeArquivo){
     if(comando == 0){
         FILE * D;
@@ -66,6 +69,7 @@ int EscreverCabecalhoResumido(int comando, const char *NomeArquivo){
     return 1;
 }
 
+//TODO LÊ CSV E ADICIONA NA STRUCT
 int CarregarCSV(Lista *L, const char *Nome_Arquivo, Tribunal t) {
     FILE * F;
     F = fopen(Nome_Arquivo, "r");
@@ -125,6 +129,8 @@ int CarregarCSV(Lista *L, const char *Nome_Arquivo, Tribunal t) {
     return lidos;
 }
 
+
+//TODO DESCARREGA OS DADOS DA STRUCT NO DESTINO
 int EscreverCSV(Lista *L, Tribunal t, const char *Nome_Arquivo)  {
     FILE *D;
     D = fopen(Nome_Arquivo, "a");
@@ -165,6 +171,7 @@ int EscreverCSV(Lista *L, Tribunal t, const char *Nome_Arquivo)  {
     return escritos;
 }
 
+//TODO FUNÇÃO CONCATENAR
 int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo){
     int n_arquivos = 1, header = 0; // São 27 
     char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv"};
@@ -187,10 +194,11 @@ int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo){
     }
 }
 
+//TODO FUNÇÃO RESUMO
 int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo)  {
     FILE * D;
     D = fopen(NomeArquivo, "a");
-    int n_arquivos = 26, header = 0; // São 27 
+    int n_arquivos = 26, header = 0; // São 27 estados
     char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
         "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
         "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
@@ -210,7 +218,7 @@ int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo)  {
     int denominador = 0;
 
      for(int i = 0; i < n_arquivos; i++) {
-        EscreverCabecalhoConcatenado(header, NomeArquivo);
+        EscreverCabecalhoResumido(header, NomeArquivo);
         int carregados =    CarregarCSV(L, arquivos[i], T);
 
         for(int j =0; j < L->Tamanho; j++)  {
@@ -294,4 +302,72 @@ int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo)  {
 
 
 
+}
+
+//TODO FUNÇÃO PESQUISA
+void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio)    {
+
+    char ext[5] = ".csv";
+    char destino[30];
+
+    strcpy(destino, NomeMunicipio);
+    strcat(destino, ext);
+
+    FILE *D;
+    D = fopen(destino, "w");
+    fclose(D);
+    D = fopen(destino, "a");
+
+    char MunicipioUpper[35];
+    strcpy(MunicipioUpper, NomeMunicipio);
+    for     (int k = 0; MunicipioUpper[k]; k++) {
+        MunicipioUpper[k] = toupper(MunicipioUpper[k]);
+    }
+
+    int n_arquivos = 26, header = 0; // São 27 
+    char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
+        "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
+        "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
+    }; 
+    for(int i = 0; i < n_arquivos; i++) {
+        EscreverCabecalhoConcatenado(header, destino);
+        int carregados =    CarregarCSV(L, arquivos[i], T);
+
+        for (int l = 0; l < L->Tamanho; l++){
+
+            if(strcmp(L->Dados[l].municipio_oj, MunicipioUpper) == 0)    {
+                fprintf(D,
+                    "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\","
+                    "%d,"
+                    "\"%s\",\"%s\",\"%s\","
+                    "%d,%d,%d,%d,%d,"
+                    "%.2f,"
+                    "%d,%d,%d,"
+                    "%.2f,"
+                    "%d,%d,%d,%d,"
+                    "%.2f,"
+                    "%d,%d,%d,%d,"
+                    "%d,%d,%d,"
+                    "%.2f\n",
+                    L->Dados[l].sigla_tribunal, L->Dados[l].procedimento, L->Dados[l].ramo_justica,
+                    L->Dados[l].sigla_grau, L->Dados[l].uf_oj, L->Dados[l].municipio_oj,
+                    L->Dados[l].id_ultimo_oj,
+                    L->Dados[l].nome, L->Dados[l].mesano_cnm1, L->Dados[l].mesano_sent,
+                    L->Dados[l].casos_novos_2026, L->Dados[l].julgados_2026, L->Dados[l].prim_sent2026,
+                    L->Dados[l].suspensos_2026, L->Dados[l].dessobrestados_2026,
+                    L->Dados[l].cumprimento_meta1,
+                    L->Dados[l].distm2_a, L->Dados[l].julgm2_a, L->Dados[l].suspm2_a,
+                    L->Dados[l].cumprimento_meta2a,
+                    L->Dados[l].distm2_ant, L->Dados[l].julgm2_ant, L->Dados[l].suspm2_ant, L->Dados[l].desom2_ant,
+                    L->Dados[l].cumprimento_meta2ant,
+                    L->Dados[l].distm4_a, L->Dados[l].julgm4_a, L->Dados[l].suspm4_a, L->Dados[l].cumprimento_meta4a,
+                    L->Dados[l].distm4_b, L->Dados[l].julgm4_b, L->Dados[l].suspm4_b,
+                    L->Dados[l].cumprimento_meta4b
+                );
+            }
+        }
+
+        L->Tamanho = 0;
+        header = 1;
+    }
 }

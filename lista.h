@@ -55,8 +55,6 @@ typedef struct  {
     int     Capacidade;
 } Lista;
 
-int concatenar_csv(const char *nome_arquivo);
-int resumo_tribunais(const char *nome_arquivo);
 void InicializarLista(Lista *L);
 int AdicionarTribunal(Lista *L, Tribunal A);
 int ListaCheia(const Lista *L);
@@ -67,5 +65,6 @@ int ConcatenarDados(Lista *L, Tribunal A, const char *NomeArquivo);
 int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo);
 int EscreverCabecalhoResumido(int comando, const char *NomeArquivo);
 int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo);
+void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio);
 
 #endif

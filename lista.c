@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <ctype.h>
 #include "lista.h"
 
 int concatenar_csv(const char *nome_arquivo) {

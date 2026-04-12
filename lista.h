@@ -1,7 +1,7 @@
 #ifndef LISTA_H
 #define LISTA_H
 
-#define MAX_TRIBUNAIS 30000
+#define MAX_TRIBUNAIS 40000
 #define MAX_LINHA 1024
 
 //TODO OBJETO

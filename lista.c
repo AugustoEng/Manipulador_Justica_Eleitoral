@@ -326,10 +326,8 @@ void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio)    {
     D = fopen(destino, "a");
 
     char MunicipioUpper[35];
-    strcpy(MunicipioUpper, NomeMunicipio);
-    for     (int k = 0; MunicipioUpper[k]; k++) {
-        MunicipioUpper[k] = toupper(MunicipioUpper[k]);
-    }
+    strncpy(MunicipioUpper, NomeMunicipio, sizeof(MunicipioUpper) - 1);
+    MunicipioUpper[sizeof(MunicipioUpper) - 1] = '\0';
 
     int n_arquivos = 27, header = 0; // São 27 
     char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
@@ -377,5 +375,6 @@ void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio)    {
         L->Tamanho = 0;
         header = 1;
     }
+    fclose(D);
     printf("\nArquivo %s foi criado", destino);
 }

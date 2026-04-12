@@ -55,6 +55,8 @@ typedef struct  {
 } Lista;
 
 //TODO FUNÇÕES AUXILIARES
+void LimparTerminal();
+void Pausar();
 void InicializarLista(Lista *L);
 int AdicionarTribunal(Lista *L, Tribunal A);
 int ListaCheia(const Lista *L);

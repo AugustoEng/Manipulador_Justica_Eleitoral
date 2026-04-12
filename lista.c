@@ -4,6 +4,22 @@
 #include <ctype.h>
 #include "lista.h"
 
+//TODO LIMPAR TERMINAL
+void LimparTerminal() {
+#ifdef _WIN32
+    system("cls");
+#else
+    system("clear");
+#endif
+}
+
+//TODO PAUSAR TERMINAL
+void Pausar() {
+    printf("\nPressione ENTER para continuar...");
+    getchar();
+    getchar();
+}
+
 //Todo INICIALIZA
 void InicializarLista(Lista *L) {
     L->Tamanho = 0;

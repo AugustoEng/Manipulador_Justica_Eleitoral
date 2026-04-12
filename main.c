@@ -6,20 +6,6 @@
 
 Lista L;
 
-void LimparTerminal() {
-#ifdef _WIN32
-    system("cls");
-#else
-    system("clear");
-#endif
-}
-
-void Pausar() {
-    printf("\nPressione ENTER para continuar...");
-    getchar();
-    getchar();
-}
-
 int main()  {
 
     Tribunal Eleitoral;

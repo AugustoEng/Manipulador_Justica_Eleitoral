@@ -1,8 +1,10 @@
 #ifndef LISTA_H
 #define LISTA_H
 
-#define MAX_LINHA 500
+#define MAX_TRIBUNAIS 30000
+#define MAX_LINHA 1024
 
+//TODO OBJETO
 typedef struct {
     // Os nomes
     char sigla_tribunal[8];
@@ -15,9 +17,6 @@ typedef struct {
     char nome[70];
     char mesano_cnm1[10];
     char mesano_sent[10];
-
-    //Separei em blocos para a gente conseguir ver melhor, sempre "acabando" num float pra ficar bonito
-    //! Tentar manter a ordem, por favor
 
     int   casos_novos_2026;
     int   julgados_2026;
@@ -48,8 +47,26 @@ typedef struct {
     float cumprimento_meta4b;
 } Tribunal;
 
-int concatenar_csv(const char *nome_arquivo);
-int resumo_tribunais(const char *nome_arquivo);
-int busca_municipio(const char * nome_arquivo, char *nome_municipio);
+//TODO LISTA
+typedef struct  {
+    Tribunal  Dados[MAX_TRIBUNAIS];
+    int     Tamanho;
+    int     Capacidade;
+} Lista;
+
+//TODO FUNÇÕES AUXILIARES
+void InicializarLista(Lista *L);
+int AdicionarTribunal(Lista *L, Tribunal A);
+int ListaCheia(const Lista *L);
+int ListaVazia(const Lista *L);
+int CarregarCSV(Lista *L, const char *Nome_Arquivo, Tribunal t);
+int EscreverCSV(Lista *L, Tribunal T, const char *Nome_Arquivo);
+int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo);
+int EscreverCabecalhoResumido(int comando, const char *NomeArquivo);
+
+//TODO FUNÇÕES PRINCIPAIS
+int ConcatenarDados(Lista *L, Tribunal A, const char *NomeArquivo);
+int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo);
+void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio);
 
 #endif

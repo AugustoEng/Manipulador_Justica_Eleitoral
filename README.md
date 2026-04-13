@@ -24,14 +24,14 @@
  
 ## Índice
  
-- [Visão Geral](#-visão-geral)
-- [Arquitetura](#️-arquitetura)
-- [Estruturas de Dados](#️-estruturas-de-dados)
-- [Como Compilar](#️-como-compilar)
-- [Como Usar](#️-como-usar)
-- [Funcionalidades](#-funcionalidades)
-- [Fluxo de Execução](#-fluxo-de-execução)
-- [Equipe](#-equipe)
+- Visão Geral
+- Arquitetura
+- Estruturas de Dados
+- Como Compilar
+- Como Usar
+- Funcionalidades
+- Fluxo de Execução
+- Equipe
  
 ---
  

@@ -4,6 +4,27 @@
 #include <ctype.h>
 #include "lista.h"
 
+//TODO LEITURA
+static const char *parse_field(const char *p, char *out, int outsize) {
+    int i = 0;
+    if (*p == '"') {
+        p++; 
+        while (*p && !(*p == '"' && *(p + 1) != '"')) {
+            if (i < outsize - 1) out[i++] = *p;
+            p++;
+        }
+        if (*p == '"') p++; 
+    } else {
+        while (*p && *p != ',' && *p != '\n' && *p != '\r') {
+            if (i < outsize - 1) out[i++] = *p;
+            p++;
+        }
+    }
+    out[i] = '\0';
+    if (*p == ',') p++; 
+    return p;
+}
+
 //TODO LIMPAR TERMINAL
 void LimparTerminal() {
 #ifdef _WIN32
@@ -20,27 +41,27 @@ void Pausar() {
     getchar();
 }
 
-//Todo INICIALIZA
+//TODO INICIALIZA
 void InicializarLista(Lista *L) {
     L->Tamanho = 0;
     L->Capacidade = MAX_TRIBUNAIS;
 }
 
 //TODO CHEIA
-//? 1 Se nestiver cheia
+//? 1 se estiver cheia
 int ListaCheia(const Lista *L) {
     return L->Tamanho >= L->Capacidade;
 }
 
 //TODO VAZIA
 //? 1 se estiver vazia
-int ListaVazia(const Lista *L)  {
+int ListaVazia(const Lista *L) {
     return L->Tamanho == 0;
 }
 
 //TODO ADICIONA NA STRUCT
 int AdicionarTribunal(Lista *L, Tribunal A) {
-    if(ListaCheia(L))   {
+    if (ListaCheia(L)) {
         printf("ERRO: Lista Cheia");
         return 0;
     }
@@ -50,109 +71,120 @@ int AdicionarTribunal(Lista *L, Tribunal A) {
 }
 
 //TODO CABEÇALHO | CONCATENAÇÃO
-int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo){
-    if(comando == 0){
-        FILE * D;
-        D = fopen(NomeArquivo, "w");
-        if (D == NULL)  {
+int EscreverCabecalhoConcatenado(int comando, const char *NomeArquivo) {
+    if (comando == 0) {
+        FILE *D = fopen(NomeArquivo, "w");
+        if (D == NULL) {
             printf("ERRO: O arquivo não foi devidamente aberto");
+            return 0;
         }
         fprintf(D, "\"sigla_tribunal\",\"procedimento\",\"ramo_justica\",\"sigla_grau\","
-           "\"uf_oj\",\"municipio_oj\",\"id_ultimo_oj\",\"nome\",\"mesano_cnm1\",\"mesano_sent\","
-           "\"casos_novos_2026\",\"julgados_2026\",\"prim_sent2026\",\"suspensos_2026\","
-           "\"dessobrestados_2026\",\"cumprimento_meta1\",\"distm2_a\",\"julgm2_a\",\"suspm2_a\","
-           "\"cumprimento_meta2a\",\"distm2_ant\",\"julgm2_ant\",\"suspm2_ant\",\"desom2_ant\","
-           "\"cumprimento_meta2ant\",\"distm4_a\",\"julgm4_a\",\"suspm4_a\",\"cumprimento_meta4a\","
-           "\"distm4_b\",\"julgm4_b\",\"suspm4_b\",\"cumprimento_meta4b\"\n");
+                   "\"uf_oj\",\"municipio_oj\",\"id_ultimo_oj\",\"nome\",\"mesano_cnm1\",\"mesano_sent\","
+                   "\"casos_novos_2026\",\"julgados_2026\",\"prim_sent2026\",\"suspensos_2026\","
+                   "\"dessobrestados_2026\",\"cumprimento_meta1\",\"distm2_a\",\"julgm2_a\",\"suspm2_a\","
+                   "\"cumprimento_meta2a\",\"distm2_ant\",\"julgm2_ant\",\"suspm2_ant\",\"desom2_ant\","
+                   "\"cumprimento_meta2ant\",\"distm4_a\",\"julgm4_a\",\"suspm4_a\",\"cumprimento_meta4a\","
+                   "\"distm4_b\",\"julgm4_b\",\"suspm4_b\",\"cumprimento_meta4b\"\n");
         fclose(D);
     }
-    
     return 1;
 }
 
 //TODO CABEÇALHO | RESUMO
-int EscreverCabecalhoResumido(int comando, const char *NomeArquivo){
-    if(comando == 0){
-        FILE * D;
-        D = fopen(NomeArquivo, "w");
-        if (D == NULL)  {
+int EscreverCabecalhoResumido(int comando, const char *NomeArquivo) {
+    if (comando == 0) {
+        FILE *D = fopen(NomeArquivo, "w");
+        if (D == NULL) {
             printf("ERRO: O arquivo não foi devidamente aberto");
+            return 0;
         }
-        fprintf(D, "\"sigla_tribunal\",\"julgados_2026\", \"Meta1\", \"Meta2A\", \"Meta2Ant\", \"Meta4A\", \"Meta4B\"\n");
+        fprintf(D, "sigla_tribunal,total_julgados_2026,Meta1,Meta2A,Meta2Ant,Meta4A,Meta4B\n");
         fclose(D);
     }
-    
     return 1;
 }
 
 //TODO LÊ CSV E ADICIONA NA STRUCT
 int CarregarCSV(Lista *L, const char *Nome_Arquivo, Tribunal t) {
-    FILE * F;
-    F = fopen(Nome_Arquivo, "r");
-    if(F == NULL)   {
+    FILE *F = fopen(Nome_Arquivo, "r");
+    if (F == NULL) {
         perror("ERRO: O arquivo não foi aberto com sucesso");
         return -1;
     }
 
-    char linha [MAX_LINHA];
+    char linha[MAX_LINHA];
     fgets(linha, sizeof(linha), F);
 
+    char buf[256];
     int lidos = 0;
+
     while (fgets(linha, sizeof(linha), F) != NULL) {
         if (strlen(linha) <= 1) continue;
         linha[strcspn(linha, "\r\n")] = '\0';
 
-        sscanf(linha,
-            "\"%[^\"]\","   // t.sigla_tribunal
-            "\"%[^\"]\","   // t.procedimento
-            "\"%[^\"]\","   // t.ramo_justica
-            "\"%[^\"]\","   // t.sigla_grau
-            "\"%[^\"]\","   // t.uf_oj
-            "\"%[^\"]\","   // t.municipio_oj
-            "%d,"
-            "\"%[^\"]\","   // t.nome
-            "\"%[^\"]\","   // t.mesano_cnm1  <-- CORRIGIDO
-            "\"%[^\"]\","   // t.mesano_sent  <-- CORRIGIDO
-            "%d,%d,%d,%d,%d,"
-            "%f,"
-            "%d,%d,%d,"
-            "%f,"
-            "%d,%d,%d,%d,"
-            "%f,"
-            "%d,%d,%d,%d,"
-            "%d,%d,%d,"
-            "%f",
-            t.sigla_tribunal, t.procedimento, t.ramo_justica,
-            t.sigla_grau, t.uf_oj, t.municipio_oj,
-            &t.id_ultimo_oj,
-            t.nome, t.mesano_cnm1, t.mesano_sent,
-            &t.casos_novos_2026, &t.julgados_2026, &t.prim_sent2026,
-            &t.suspensos_2026, &t.dessobrestados_2026,
-            &t.cumprimento_meta1,
-            &t.distm2_a, &t.julgm2_a, &t.suspm2_a,
-            &t.cumprimento_meta2a,
-            &t.distm2_ant, &t.julgm2_ant, &t.suspm2_ant, &t.desom2_ant,
-            &t.cumprimento_meta2ant,
-            &t.distm4_a, &t.julgm4_a, &t.suspm4_a, &t.cumprimento_meta4a,
-            &t.distm4_b, &t.julgm4_b, &t.suspm4_b,
-            &t.cumprimento_meta4b
-        );
+        const char *p = linha;
+
+        // Campos string
+        p = parse_field(p, t.sigla_tribunal, sizeof(t.sigla_tribunal));
+        p = parse_field(p, t.procedimento,   sizeof(t.procedimento));
+        p = parse_field(p, t.ramo_justica,   sizeof(t.ramo_justica));
+        p = parse_field(p, t.sigla_grau,     sizeof(t.sigla_grau));
+        p = parse_field(p, t.uf_oj,          sizeof(t.uf_oj));
+        p = parse_field(p, t.municipio_oj,   sizeof(t.municipio_oj));
+
+        p = parse_field(p, buf, sizeof(buf));
+        t.id_ultimo_oj = atoi(buf);
+
+        p = parse_field(p, t.nome,        sizeof(t.nome));
+        p = parse_field(p, t.mesano_cnm1, sizeof(t.mesano_cnm1)); 
+        p = parse_field(p, t.mesano_sent, sizeof(t.mesano_sent)); 
+
+        p = parse_field(p, buf, sizeof(buf)); t.casos_novos_2026    = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.julgados_2026       = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.prim_sent2026       = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.suspensos_2026      = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.dessobrestados_2026 = atoi(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.cumprimento_meta1   = (float)atof(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.distm2_a  = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.julgm2_a  = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.suspm2_a  = atoi(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.cumprimento_meta2a  = (float)atof(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.distm2_ant = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.julgm2_ant = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.suspm2_ant = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.desom2_ant = atoi(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.cumprimento_meta2ant = (float)atof(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.distm4_a = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.julgm4_a = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.suspm4_a = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.cumprimento_meta4a  = atoi(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.distm4_b = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.julgm4_b = atoi(buf);
+        p = parse_field(p, buf, sizeof(buf)); t.suspm4_b = atoi(buf);
+
+        p = parse_field(p, buf, sizeof(buf)); t.cumprimento_meta4b  = (float)atof(buf);
+
         AdicionarTribunal(L, t);
         lidos++;
-        
     }
+
     fclose(F);
     return lidos;
 }
 
-
 //TODO DESCARREGA OS DADOS DA STRUCT NO DESTINO
-int EscreverCSV(Lista *L, Tribunal t, const char *Nome_Arquivo)  {
-    FILE *D;
-    D = fopen(Nome_Arquivo, "a");
+int EscreverCSV(Lista *L, Tribunal t, const char *Nome_Arquivo) {
+    FILE *D = fopen(Nome_Arquivo, "a");
 
     int escritos = 0;
-    for(int i = 0; i < L->Tamanho; i++){
+    for (int i = 0; i < L->Tamanho; i++) {
         fprintf(D,
             "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\","
             "%d,"
@@ -181,152 +213,153 @@ int EscreverCSV(Lista *L, Tribunal t, const char *Nome_Arquivo)  {
             L->Dados[i].distm4_b, L->Dados[i].julgm4_b, L->Dados[i].suspm4_b,
             L->Dados[i].cumprimento_meta4b
         );
-        escritos ++;
+        escritos++;
     }
     fclose(D);
     return escritos;
 }
 
 //TODO FUNÇÃO CONCATENAR
-int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo){
-    int n_arquivos = 27, header = 0; // São 27 
-    char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
-        "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
-        "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
-    }; 
-    for(int i = 0; i < n_arquivos; i++) {
+int ConcatenarDados(Lista *L, Tribunal T, const char *NomeArquivo) {
+    int n_arquivos = 27, header = 0;
+    char *arquivos[] = {
+        "teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv",
+        "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv",
+        "teste_TRE-GO.csv", "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv",
+        "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv",
+        "teste_TRE-PI.csv", "teste_TRE-PR.csv", "teste_TRE-RJ.csv", "teste_TRE-RN.csv",
+        "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv",
+        "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
+    };
+
+    for (int i = 0; i < n_arquivos; i++) {
         EscreverCabecalhoConcatenado(header, NomeArquivo);
-        int carregados =    CarregarCSV(L, arquivos[i], T);
-        int escritos =      EscreverCSV(L, T, NomeArquivo);
+        int carregados = CarregarCSV(L, arquivos[i], T);
+        int escritos   = EscreverCSV(L, T, NomeArquivo);
         L->Tamanho = 0;
         header = 1;
 
-
-        if (escritos != carregados){
+        if (escritos != carregados)
             printf("Houve um deficit de %d na escrita do arquivo %s", carregados - escritos, arquivos[i]);
-        }
-        else{
+        else
             printf("Arquivo [ %s ] concatenado com sucesso\n", arquivos[i]);
-        }
-
     }
-    printf("\nArquvivo %s foi criado", NomeArquivo);
+    printf("\nArquivo %s foi criado", NomeArquivo);
+    return 1;
 }
 
 //TODO FUNÇÃO RESUMO
-int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo)  {
-    FILE * D;
-    D = fopen(NomeArquivo, "a");
-    int n_arquivos = 27, header = 0; // São 27 estados
-    char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
-        "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
-        "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
+int GerarResumo(Lista *L, Tribunal T, const char *NomeArquivo) {
+    int n_arquivos = 27;
+    char *arquivos[] = {
+        "teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv",
+        "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv",
+        "teste_TRE-GO.csv", "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv",
+        "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv",
+        "teste_TRE-PI.csv", "teste_TRE-PR.csv", "teste_TRE-RJ.csv", "teste_TRE-RN.csv",
+        "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv",
+        "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
     };
 
-    // DEFINIçÃO DAS VARIÁVEI SOMATÓRIA - Ficou lindo
-    int sum_julgados_2026 = 0,  sum_casos_novos_2026 = 0,   sum_dessobrestados_2026 = 0,    sum_suspensos_2026 = 0,
-        sum_julgm2_a = 0,       sum_distm2_a = 0,           sum_suspm2_a = 0,               sum_julgm2_ant = 0,
-        sum_distm2_ant = 0,     sum_suspm2_ant = 0,         sum_desom2_ant = 0,             sum_julgm4_a = 0,
-        sum_distm4_a = 0,       sum_suspm4_a = 0,           sum_julgm4_b = 0,               sum_distm4_b = 0,
-        sum_suspm4_b = 0;
-    
-    float   
-        meta1 = 0,              meta2a = 0,                 meta2ant = 0,                   meta4a = 0,                     
-        meta4b = 0;
+    EscreverCabecalhoResumido(0, NomeArquivo);
+    FILE *D = fopen(NomeArquivo, "a");
+    if (D == NULL) {
+        printf("ERRO: O arquivo %s não pôde ser aberto para escrita\n", NomeArquivo);
+        return 0;
+    }
 
-    int denominador = 0;
+    for (int i = 0; i < n_arquivos; i++) {
+        int carregados = CarregarCSV(L, arquivos[i], T);
+        (void)carregados;
 
-    for(int i = 0; i < n_arquivos; i++) {
-        EscreverCabecalhoResumido(header, NomeArquivo);
-        int carregados =    CarregarCSV(L, arquivos[i], T);
+        int sum_julgados_2026 = 0, sum_casos_novos_2026 = 0, sum_dessobrestados_2026 = 0, sum_suspensos_2026 = 0,
+            sum_julgm2_a = 0,      sum_distm2_a = 0,         sum_suspm2_a = 0,
+            sum_julgm2_ant = 0,    sum_distm2_ant = 0,       sum_suspm2_ant = 0,   sum_desom2_ant = 0,
+            sum_julgm4_a = 0,      sum_distm4_a = 0,         sum_suspm4_a = 0,
+            sum_julgm4_b = 0,      sum_distm4_b = 0,         sum_suspm4_b = 0;
 
-        for(int j =0; j < L->Tamanho; j++)  {
-            //* Meta1
-            sum_julgados_2026       +=  L->Dados[j].julgados_2026;
-            sum_casos_novos_2026    +=  L->Dados[j].casos_novos_2026;
-            sum_dessobrestados_2026 +=  L->Dados[j].dessobrestados_2026;
-            sum_suspensos_2026      +=  L->Dados[j].suspensos_2026;
+        int denominador = 0;
 
-            //* Meta2A
+        char sigla_atual[8] = "";
+        if (L->Tamanho > 0) {
+            strncpy(sigla_atual, L->Dados[0].sigla_tribunal, sizeof(sigla_atual) - 1);
+        }
+
+        for (int j = 0; j < L->Tamanho; j++) {
+            sum_julgados_2026       += L->Dados[j].julgados_2026;
+            sum_casos_novos_2026    += L->Dados[j].casos_novos_2026;
+            sum_dessobrestados_2026 += L->Dados[j].dessobrestados_2026;
+            sum_suspensos_2026      += L->Dados[j].suspensos_2026;
+
             sum_julgm2_a += L->Dados[j].julgm2_a;
             sum_distm2_a += L->Dados[j].distm2_a;
             sum_suspm2_a += L->Dados[j].suspm2_a;
 
-            //* Meta2Ant
-            sum_julgm2_ant  +=   L->Dados[j].julgm2_ant;
-            sum_distm2_ant  +=   L->Dados[j].distm2_ant;
-            sum_suspm2_ant  +=   L->Dados[j].suspm2_ant;
-            sum_desom2_ant  +=   L->Dados[j].desom2_ant;
+            sum_julgm2_ant += L->Dados[j].julgm2_ant;
+            sum_distm2_ant += L->Dados[j].distm2_ant;
+            sum_suspm2_ant += L->Dados[j].suspm2_ant;
+            sum_desom2_ant += L->Dados[j].desom2_ant;
 
-            //* Meta4A
             sum_julgm4_a += L->Dados[j].julgm4_a;
             sum_distm4_a += L->Dados[j].distm4_a;
             sum_suspm4_a += L->Dados[j].suspm4_a;
 
-            //* Meta4B
             sum_julgm4_b += L->Dados[j].julgm4_b;
             sum_distm4_b += L->Dados[j].distm4_b;
             sum_suspm4_b += L->Dados[j].suspm4_b;
         }
 
-        //DESENVOLVENDO A FÓRMULAS
-
-        // Meta 1
+        //Meta 1
         denominador = sum_casos_novos_2026 + sum_dessobrestados_2026 - sum_suspensos_2026;
-        if (denominador != 0) {
-            meta1 = ((float)sum_julgados_2026 / denominador) * 100.0;
-        } else {
-            meta1 = 0.0;
-        }
+        if (denominador != 0)
+            fprintf(D, "%s,%d,%.2f,", sigla_atual, sum_julgados_2026,
+                    ((float)sum_julgados_2026 / denominador) * 100.0f);
+        else
+            fprintf(D, "%s,%d,%.2f,", sigla_atual, sum_julgados_2026, 0.0f);
 
-        // Meta 2A
+        //Meta 2A
         denominador = sum_distm2_a - sum_suspm2_a;
-        if (denominador != 0) {
-            meta2a = ((float)sum_julgm2_a / denominador) * (1000.0 / 7.0);
-        } else {
-            meta2a = 0.0;
-        }
+        if (denominador != 0)
+            fprintf(D, "%.2f,", ((float)sum_julgm2_a / denominador) * (1000.0f / 7.0f));
+        else
+            fprintf(D, "%.2f,", 0.0f);
 
-        // Meta 2Ant
+        //Meta 2Ant
         denominador = sum_distm2_ant - sum_suspm2_ant - sum_desom2_ant;
-        if (denominador != 0) {
-            meta2ant = ((float)sum_julgm2_ant / denominador) * 100.0;
-        } else {
-            meta2ant = 0.0;
-        }
+        if (sum_distm2_ant == 0 && sum_julgm2_ant == 0)
+            fprintf(D, "0.00,");
+        else if (denominador != 0)
+            fprintf(D, "%.2f,", ((float)sum_julgm2_ant / denominador) * 100.0f);
+        else
+            fprintf(D, "%.2f,", 0.0f);
 
-        // Meta 4A
+        //Meta 4A
         denominador = sum_distm4_a - sum_suspm4_a;
-        if (denominador != 0) {
-            meta4a = ((float)sum_julgm4_a / denominador) * 100.0;
-        } else {
-            meta4a = 0.0;
-        }
+        if (sum_distm4_a == 0 && sum_julgm4_a == 0)
+            fprintf(D, "0.00,");
+        else if (denominador != 0)
+            fprintf(D, "%.2f,", ((float)sum_julgm4_a / denominador) * 100.0f);
+        else
+            fprintf(D, "%.2f,", 0.0f);
 
-        // Meta 4B
+        //Meta 4B
         denominador = sum_distm4_b - sum_suspm4_b;
-        if (denominador != 0) {
-            meta4b = ((float)sum_julgm4_b / denominador) * 100.0;
-        } else {
-            meta4b = 0.0;
-        }
+        if (denominador != 0)
+            fprintf(D, "%.2f\n", ((float)sum_julgm4_b / denominador) * 100.0f);
+        else
+            fprintf(D, "%.2f\n", 0.0f);
 
-        //PRINTA OS RESULTADOS NO ARQUIVO DESTINO
-        fprintf(D, "\"%s\", %d, %.2f, %.2f, %.2f, %.2f, %.2f\n", L->Dados[i].sigla_tribunal, sum_julgados_2026, meta1, meta2a, meta2ant, meta4a, meta4b);
         L->Tamanho = 0;
-        header = 1;
-        printf("Arquivo [ %s ]resumido com sucesso\n", arquivos[i]);
+        printf("Arquivo [ %s ] resumido com sucesso\n", arquivos[i]);
     }
+
     fclose(D);
     printf("\nArquivo %s criado com sucesso", NomeArquivo);
-
-
-
+    return 1;
 }
 
 //TODO FUNÇÃO PESQUISA
-void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio)    {
-
+void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio) {
     char ext[5] = ".csv";
     char destino[30];
 
@@ -336,8 +369,7 @@ void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio)    {
     }
     strcat(destino, ext);
 
-    FILE *D;
-    D = fopen(destino, "w");
+    FILE *D = fopen(destino, "w");
     fclose(D);
     D = fopen(destino, "a");
 
@@ -345,18 +377,24 @@ void PesquisarMunicipio(Lista *L, Tribunal T, const char *NomeMunicipio)    {
     strncpy(MunicipioUpper, NomeMunicipio, sizeof(MunicipioUpper) - 1);
     MunicipioUpper[sizeof(MunicipioUpper) - 1] = '\0';
 
-    int n_arquivos = 27, header = 0; // São 27 
-    char *arquivos[] = {"teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv", "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv", "teste_TRE-GO.csv",
-        "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv", "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv", "teste_TRE-PI.csv", "teste_TRE-PR.csv",
-        "teste_TRE-RJ.csv", "teste_TRE-RN.csv", "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv", "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
-    }; 
-    for(int i = 0; i < n_arquivos; i++) {
+    int n_arquivos = 27, header = 0;
+    char *arquivos[] = {
+        "teste_TRE-AC.csv", "teste_TRE-AL.csv", "teste_TRE-AM.csv", "teste_TRE-AP.csv",
+        "teste_TRE-BA.csv", "teste_TRE-CE.csv", "teste_TRE-DF.csv", "teste_TRE-ES.csv",
+        "teste_TRE-GO.csv", "teste_TRE-MA.csv", "teste_TRE-MG.csv", "teste_TRE-MS.csv",
+        "teste_TRE-MT.csv", "teste_TRE-PA.csv", "teste_TRE-PB.csv", "teste_TRE-PE.csv",
+        "teste_TRE-PI.csv", "teste_TRE-PR.csv", "teste_TRE-RJ.csv", "teste_TRE-RN.csv",
+        "teste_TRE-RO.csv", "teste_TRE-RR.csv", "teste_TRE-RS.csv", "teste_TRE-SC.csv",
+        "teste_TRE-SE.csv", "teste_TRE-SP.csv", "teste_TRE-TO.csv"
+    };
+
+    for (int i = 0; i < n_arquivos; i++) {
         EscreverCabecalhoConcatenado(header, destino);
-        int carregados =    CarregarCSV(L, arquivos[i], T);
+        int carregados = CarregarCSV(L, arquivos[i], T);
+        (void)carregados;
 
-        for (int l = 0; l < L->Tamanho; l++){
-
-            if(strcmp(L->Dados[l].municipio_oj, MunicipioUpper) == 0)    {
+        for (int l = 0; l < L->Tamanho; l++) {
+            if (strcmp(L->Dados[l].municipio_oj, MunicipioUpper) == 0) {
                 fprintf(D,
                     "\"%s\",\"%s\",\"%s\",\"%s\",\"%s\",\"%s\","
                     "%d,"
